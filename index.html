@@ -219,6 +219,7 @@ footer{position:relative;z-index:2}
 }
 /* touch devices: no hover-only jumps */
 @media(hover:none){
+  .scanlines{display:none}
   .hero-title span:hover{transform:none}
   .links a:hover{transform:none;box-shadow:none}
 }
@@ -337,6 +338,7 @@ footer{position:relative;z-index:2}
 <script>
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 gsap.registerPlugin(ScrollTrigger);
+const touch=matchMedia('(hover:none)').matches; /* phones/tablets: skip per-frame scroll-scrubbed effects, they stutter on iOS */
 ScrollTrigger.config({ignoreMobileResize:true});
 
 /* ============ PREVIEW PLAYER (30 s extracted from the clip) ============ */
@@ -433,7 +435,7 @@ let glitchKick=()=>{};
     gl.uniform2f(uImg,im.width,im.height);ready=true;cv.classList.add('on');};
   im.src=coverSrc;
   let W=0,H=0;
-  function size(){const d=Math.min(devicePixelRatio||1,1.5);W=Math.round(hero.clientWidth*d);H=Math.round(hero.clientHeight*d);cv.width=W;cv.height=H;gl.viewport(0,0,W,H);gl.uniform2f(uRes,W,H)}
+  function size(){const d=Math.min(devicePixelRatio||1,touch?1:1.5);W=Math.round(hero.clientWidth*d);H=Math.round(hero.clientHeight*d);cv.width=W;cv.height=H;gl.viewport(0,0,W,H);gl.uniform2f(uRes,W,H)}
   size(); addEventListener('resize',size);
   let g=0,mx=.5,my=.5,tx=.5,ty=.5,vis=true,next=1.5,lastY=scrollY,t0=performance.now();
   addEventListener('pointermove',e=>{tx=e.clientX/innerWidth;ty=e.clientY/innerHeight});
@@ -457,7 +459,7 @@ if(!reduce){
     const x=e.clientX/innerWidth-.5,y=e.clientY/innerHeight-.5;
     gsap.to('#heroTitle',{x:x*12,y:y*8,duration:.6,overwrite:'auto'});
   });
-  gsap.to('#heroTitle',{yPercent:-16,scale:1.08,ease:'none',scrollTrigger:{trigger:'.hero',start:'top top',end:'bottom top',scrub:true}});
+  if(!touch) gsap.to('#heroTitle',{yPercent:-16,scale:1.08,ease:'none',scrollTrigger:{trigger:'.hero',start:'top top',end:'bottom top',scrub:true}});
 }
 
 /* ============ ABOUT: word-by-word reveal ============ */
@@ -469,7 +471,8 @@ if(!reduce){
   walk(p);
   const words=p.querySelectorAll('.w');
   if(reduce){gsap.set(words,{opacity:1});return}
-  gsap.to(words,{opacity:1,stagger:.12,ease:'none',scrollTrigger:{trigger:'#about',start:'top 55%',end:'bottom 70%',scrub:true}});
+  if(touch) gsap.to(words,{opacity:1,stagger:.03,duration:.5,ease:'none',scrollTrigger:{trigger:'#about',start:'top 70%'}});
+  else gsap.to(words,{opacity:1,stagger:.12,ease:'none',scrollTrigger:{trigger:'#about',start:'top 55%',end:'bottom 70%',scrub:true}});
 })();
 
 /* ============ SINGLE reveal ============ */
@@ -575,7 +578,7 @@ track.addEventListener('scroll',()=>{const m=track.scrollWidth-track.clientWidth
 
   /* about */
   gsap.from('.about .tag',{x:-60,opacity:0,duration:.8,scrollTrigger:{trigger:'#about',start:'top 70%'}});
-  gsap.to('#aboutText',{yPercent:-6,ease:'none',scrollTrigger:{trigger:'#about',start:'top bottom',end:'bottom top',scrub:true}});
+  if(!touch) gsap.to('#aboutText',{yPercent:-6,ease:'none',scrollTrigger:{trigger:'#about',start:'top bottom',end:'bottom top',scrub:true}});
 
   /* single */
   /* eyebrow: chip pops, letters type in */
@@ -583,7 +586,7 @@ track.addEventListener('scroll',()=>{const m=track.scrollWidth-track.clientWidth
   gsap.from('.eyebrow',{scale:.5,x:-40,opacity:0,transformOrigin:'left center',duration:.7,ease:'back.out(2)',scrollTrigger:{trigger:'#single',start:'top 70%'}});
   gsap.from(ec,{opacity:0,y:10,stagger:.03,duration:.3,delay:.25,scrollTrigger:{trigger:'#single',start:'top 70%'}});
   /* title lines drift sideways in opposite directions as you scroll */
-  document.querySelectorAll('.rel-title .ln i').forEach((el,i)=>gsap.fromTo(el,{x:(i%2?-1:1)*-30},{x:(i%2?-1:1)*40,ease:'none',scrollTrigger:{trigger:'#single',start:'top bottom',end:'bottom top',scrub:true}}));
+  if(!touch) document.querySelectorAll('.rel-title .ln i').forEach((el,i)=>gsap.fromTo(el,{x:(i%2?-1:1)*-30},{x:(i%2?-1:1)*40,ease:'none',scrollTrigger:{trigger:'#single',start:'top bottom',end:'bottom top',scrub:true}}));
   /* player: wipes open, play button springs in, equaliser grows, meta slides */
   window.eqGrow=0;
   const pt={trigger:'.player',start:'top 92%'};
@@ -598,13 +601,13 @@ track.addEventListener('scroll',()=>{const m=track.scrollWidth-track.clientWidth
     a.addEventListener('mouseleave',()=>gsap.to(a,{x:0,y:0,duration:.6,ease:'elastic.out(1,.4)'}));
   });
   gsap.from('.rel-title .ln i',{yPercent:110,rotate:6,duration:.9,stagger:.12,ease:'power4.out',scrollTrigger:{trigger:'#single',start:'top 65%'}});
-  gsap.fromTo('.cover-wrap',{y:90},{y:-70,ease:'none',scrollTrigger:{trigger:'#single',start:'top bottom',end:'bottom top',scrub:true}});
+  if(!touch) gsap.fromTo('.cover-wrap',{y:90},{y:-70,ease:'none',scrollTrigger:{trigger:'#single',start:'top bottom',end:'bottom top',scrub:true}});
   gsap.from('.sticker',{scale:0,rotate:-200,duration:.9,ease:'back.out(2)',scrollTrigger:{trigger:'.cover-wrap',start:'top 60%'}});
   gsap.from('.sticker2',{scale:0,duration:.7,delay:.2,ease:'back.out(3)',scrollTrigger:{trigger:'.cover-wrap',start:'top 60%'}});
 
   /* clip */
   gsap.from('.clip-title',{x:-50,opacity:0,duration:.8,scrollTrigger:{trigger:'#clip',start:'top 60%'}});
-  gsap.fromTo('#clipCard',{scale:.78},{scale:1,ease:'none',scrollTrigger:{trigger:'#clip',start:'top 90%',end:'top 20%',scrub:true}});
+  if(!touch) gsap.fromTo('#clipCard',{scale:.78},{scale:1,ease:'none',scrollTrigger:{trigger:'#clip',start:'top 90%',end:'top 20%',scrub:true}});
 
   /* world */
   const wc=split(document.getElementById('worldTitle'));
@@ -616,11 +619,6 @@ track.addEventListener('scroll',()=>{const m=track.scrollWidth-track.clientWidth
   const fc=split(document.querySelector('footer .big'));
   gsap.from(fc,{yPercent:130,rotate:-14,opacity:0,stagger:.08,duration:.8,ease:'back.out(2)',scrollTrigger:{trigger:'footer',start:'top 90%'}});
   gsap.from('footer > div:not(.big)',{y:30,opacity:0,stagger:.12,duration:.7,scrollTrigger:{trigger:'footer',start:'top 90%'}});
-
-  /* section "wipe" — each dark/blue block slides over the previous one */
-  ['#about','#single'].forEach(sel=>{
-    gsap.from(sel,{scale:.92,borderRadius:'40px 40px 0 0',transformOrigin:'50% 0',ease:'none',force3D:true,clearProps:'transform,borderRadius',scrollTrigger:{trigger:sel,start:'top bottom',end:'top 55%',scrub:true}});
-  });
 })();
 
 /* page progress bar */
