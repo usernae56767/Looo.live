@@ -36,7 +36,7 @@ button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
 .logo{font-family:var(--display);font-size:24px;color:var(--yellow);-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;text-shadow:2px 3px 0 var(--deep)}
 .nav ul{display:flex;gap:30px;list-style:none;font-size:10px;letter-spacing:.2em;font-weight:700}
 .nav ul a{opacity:.85;transition:.2s}.nav ul a:hover{opacity:1;color:var(--yellow)}
-.pill{border:1.5px solid currentColor;border-radius:99px;padding:7px 14px;font-size:9px;letter-spacing:.18em;font-weight:700;transition:.2s;background:rgba(18,18,26,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.pill{border:1.5px solid currentColor;border-radius:99px;padding:7px 14px;font-size:9px;letter-spacing:.18em;font-weight:700;transition:.2s;background:rgba(18,18,26,.78)}
 .pill:hover{background:var(--yellow);color:var(--ink);border-color:var(--yellow)}
 @media(max-width:700px){.nav ul{display:none}}
 
@@ -72,7 +72,7 @@ button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
 /* ABOUT */
 .about{background:var(--ink);padding:clamp(110px,18vh,200px) clamp(20px,8vw,140px);min-height:100vh;display:flex;flex-direction:column;justify-content:center}
 .about .tag{font-size:10px;letter-spacing:.2em;color:var(--lblue);margin-bottom:34px}
-.about p{font-family:var(--display);font-size:clamp(30px,5.2vw,76px);line-height:1.08;max-width:15em;filter:url(#wobble)}
+.about p{font-family:var(--display);font-size:clamp(30px,5.2vw,76px);line-height:1.08;max-width:15em}
 .about .w{opacity:.18;display:inline-block;margin-right:.26em}
 .about .y{color:var(--yellow)}
 
@@ -144,7 +144,7 @@ footer a:hover{color:var(--yellow)}
 
 /* section names: same size, but on a solid yellow tag so they stand out on every background */
 .about .tag,.clip-title,.eyebrow{display:inline-block;width:fit-content;background:var(--yellow);color:var(--ink);font-weight:700;padding:6px 12px;border:2px solid var(--ink);border-radius:99px;box-shadow:2px 3px 0 var(--ink);opacity:1}
-.nav ul{background:rgba(18,18,26,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);padding:8px 18px;border-radius:99px}
+.nav ul{background:rgba(18,18,26,.78);padding:8px 18px;border-radius:99px}
 .nav ul a{opacity:1}
 /* "Stage." in yellow, TikTok tile, link + player polish */
 .v-head h2 .y2{color:var(--yellow);-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;text-shadow:3px 4px 0 var(--ink)}
@@ -367,7 +367,9 @@ audio.addEventListener('timeupdate',()=>{
   if(el>=LEN){audio.pause();audio.currentTime=START;setPlaying(false);pTime.textContent='0:00 / '+fmt(LEN)}
 });
 const BARS=56, fdata=new Uint8Array(64);
+let eqVis=true;if('IntersectionObserver' in window)new IntersectionObserver(es=>{eqVis=es[0].isIntersecting}).observe(eq);
 (function drawEQ(t){
+  if(!eqVis){requestAnimationFrame(drawEQ);return}
   const w=eq.width,h=eq.height,bw=w/BARS; ectx.clearRect(0,0,w,h);
   if(analyser&&playing) analyser.getByteFrequencyData(fdata);
   for(let i=0;i<BARS;i++){
@@ -546,6 +548,21 @@ track.addEventListener('scroll',()=>{const m=track.scrollWidth-track.clientWidth
   addEventListener('pointerup',up);addEventListener('pointercancel',up);
   track.addEventListener('click',e=>{if(moved){e.preventDefault();e.stopPropagation()}},true);
   track.addEventListener('dragstart',e=>e.preventDefault());
+})();
+
+
+/* reels stretch sideways with the swipe speed */
+(function(){
+  if(reduce) return;
+  const cards=[...document.querySelectorAll('.card')]; let sk=0,sx=1,sy=1,last=track.scrollLeft,lt=performance.now(),v=0;
+  gsap.ticker.add(()=>{
+    const n=performance.now(),dt=Math.max(1,n-lt),x=track.scrollLeft; v+=((x-last)/dt*1000-v)*.35; last=x; lt=n;
+    const tSk=Math.max(-22,Math.min(22,-v/160)), tSx=1+Math.min(Math.abs(v)/3500,.5), tSy=1-Math.min(Math.abs(v)/14000,.1);
+    sk+=(tSk-sk)*.12; sx+=(tSx-sx)*.12; sy+=(tSy-sy)*.12;
+    if(Math.abs(sk)<.02&&Math.abs(sx-1)<.001&&!cards[0]._fx)return;
+    cards[0]._fx=Math.abs(sk)>=.02||Math.abs(sx-1)>=.001;
+    cards.forEach((c,i)=>gsap.set(c,{skewX:sk*(1+i*.12),scaleX:sx+i*.01*Math.abs(sk)/10,scaleY:sy}));
+  });
 })();
 
 
