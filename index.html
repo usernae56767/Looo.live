@@ -28,6 +28,7 @@ html{overflow-x:clip;-webkit-text-size-adjust:100%}
 body{background:var(--ink);color:#fff;font-family:var(--mono);overflow-x:hidden}
 a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
+.no-pbar .pbar{display:none}
 .pbar{position:fixed;top:0;left:0;right:0;height:4px;z-index:100;background:linear-gradient(90deg,var(--yellow),var(--pink),var(--lblue));transform-origin:left;transform:scaleX(0)}
 
 /* NAV */
@@ -333,6 +334,7 @@ footer{position:relative;z-index:2}
 </footer>
 
 <script>if(location.protocol==='file:')document.write('<script src="assets/cover-data.js"><\/script>')</script>
+<script>if(/iPhone|iPad|iPod/.test(navigator.userAgent)&&!/CriOS|FxiOS|EdgiOS|OPiOS/.test(navigator.userAgent))document.documentElement.classList.add('no-pbar')</script>
 <script src="assets/vendor/gsap.min.js"></script>
 <script src="assets/vendor/ScrollTrigger.min.js"></script>
 <script>
@@ -471,8 +473,7 @@ if(!reduce){
   walk(p);
   const words=p.querySelectorAll('.w');
   if(reduce){gsap.set(words,{opacity:1});return}
-  if(touch) gsap.to(words,{opacity:1,stagger:.03,duration:.5,ease:'none',scrollTrigger:{trigger:'#about',start:'top 65%',end:'bottom 25%',toggleActions:'play reset play reset'}});
-  else gsap.to(words,{opacity:1,stagger:.12,ease:'none',scrollTrigger:{trigger:'#about',start:'top 55%',end:'bottom 70%',scrub:true}});
+  gsap.to(words,{opacity:1,stagger:.12,ease:'none',scrollTrigger:{trigger:'#about',start:'top 55%',end:'bottom 70%',scrub:true}});
 })();
 
 /* ============ SINGLE reveal ============ */
