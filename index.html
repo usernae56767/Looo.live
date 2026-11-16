@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>LOOO — On Vise Le 200</title>
 <meta name="description" content="LOOO — new single « On Vise Le 200 », out on every platform.">
 <meta name="theme-color" content="#12121a">
@@ -28,10 +28,10 @@ html{overflow-x:clip;-webkit-text-size-adjust:100%}
 body{background:var(--ink);color:#fff;font-family:var(--mono);overflow-x:hidden}
 a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
-.pbar{position:fixed;top:0;left:0;right:0;height:4px;z-index:100;background:linear-gradient(90deg,var(--yellow),var(--pink),var(--lblue));transform-origin:left;transform:scaleX(0)}
+.pbar{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;height:4px;z-index:100;background:linear-gradient(90deg,var(--yellow),var(--pink),var(--lblue));transform-origin:left;transform:scaleX(0)}
 
 /* NAV */
-.nav{position:fixed;inset:0 0 auto 0;z-index:90;display:flex;justify-content:space-between;align-items:center;padding:20px clamp(16px,3vw,40px);color:#fff;pointer-events:none}
+.nav{position:fixed;inset:0 0 auto 0;z-index:90;display:flex;justify-content:space-between;align-items:center;padding:calc(20px + env(safe-area-inset-top,0px)) max(clamp(16px,3vw,40px),env(safe-area-inset-right,0px)) 20px max(clamp(16px,3vw,40px),env(safe-area-inset-left,0px));color:#fff;pointer-events:none}
 .nav>*{pointer-events:auto}
 .logo{font-family:var(--display);font-size:24px;color:var(--yellow);-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;text-shadow:2px 3px 0 var(--deep)}
 .nav ul{display:flex;gap:30px;list-style:none;font-size:10px;letter-spacing:.2em;font-weight:700}
@@ -48,8 +48,8 @@ button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
 .hero-title{position:relative;z-index:3;font-family:var(--display);font-weight:400;font-size:clamp(130px,29vw,460px);line-height:.9;letter-spacing:-.01em;
   color:var(--yellow);-webkit-text-stroke:clamp(6px,1vw,14px) var(--ink);paint-order:stroke fill;
   text-shadow:.035em .05em 0 var(--deep),.055em .075em 0 var(--deep),.075em .1em 0 var(--deep),.095em .12em 0 var(--ink);user-select:none;will-change:transform}
-.hero-title span{display:inline-block;transition:transform .25s}
-.hero-title span:hover{transform:translateY(-.05em) rotate(-4deg)}
+.hero-title span{display:inline-block;vertical-align:top}
+@media(hover:hover){.hero-title span:hover{transform:translateY(-.05em) rotate(-4deg);transition:transform .25s}}
 .hero-info{position:absolute;left:clamp(16px,3vw,40px);bottom:28px;z-index:4;font-size:11px;line-height:1.5;max-width:240px;text-shadow:0 1px 8px rgba(0,0,0,.6)}
 .hero-info b{color:var(--yellow);font-weight:700}
 .btn-main{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);z-index:4;background:var(--yellow);color:var(--ink);border:2.5px solid var(--ink);border-radius:99px;padding:12px 24px;font-weight:700;font-size:10px;letter-spacing:.2em;box-shadow:3px 4px 0 var(--ink);transition:.15s;white-space:nowrap}
@@ -454,7 +454,7 @@ let glitchKick=()=>{};
   running=true;requestAnimationFrame(loop);
 })();
 if(!reduce){
-  gsap.from('#heroTitle span',{y:140,opacity:0,rotate:-14,stagger:.1,duration:.9,delay:.2,ease:'back.out(1.8)'});
+  gsap.from('#heroTitle span',{y:140,opacity:0,rotate:-14,stagger:.1,duration:.9,delay:.2,ease:'back.out(1.8)',clearProps:'transform,opacity'});
   addEventListener('mousemove',e=>{
     const x=e.clientX/innerWidth-.5,y=e.clientY/innerHeight-.5;
     gsap.to('#heroTitle',{x:x*12,y:y*8,duration:.6,overwrite:'auto'});
