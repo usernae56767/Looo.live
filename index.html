@@ -531,6 +531,9 @@ track.addEventListener('scroll',()=>{const m=track.scrollWidth-track.clientWidth
     gsap.to(X,{scale:0,duration:.2});
     gsap.to(ov,{left:r.left,top:r.top,width:r.width,height:r.height,borderRadius:18,rotate:-2.5,duration:.7,ease:'power4.inOut',onComplete:()=>{ov.style.display='none';ov.innerHTML='';X.style.display='none';document.body.style.overflow=''}});
   }
+  /* phone turned sideways while the clip is open: refit the overlay to the new screen size */
+  const refit=()=>{if(!open)return;gsap.killTweensOf(ov);gsap.set(ov,{left:0,top:0,width:innerWidth,height:innerHeight,borderRadius:0,rotate:0,opacity:1,display:'block'});gsap.set(X,{scale:1,display:'grid'})};
+  addEventListener('resize',refit);addEventListener('orientationchange',()=>setTimeout(refit,250));
   card.addEventListener('click',openClip); card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openClip()}});
   X.addEventListener('click',closeClip); addEventListener('keydown',e=>{if(e.key==='Escape')closeClip()});
 })();
