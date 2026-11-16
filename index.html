@@ -120,13 +120,15 @@ button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
 .clip-close{position:fixed;z-index:130;top:20px;right:20px;width:46px;height:46px;border-radius:50%;background:var(--yellow);border:3px solid var(--ink);font:400 20px var(--display);color:var(--ink);display:none;place-items:center}
 
 /* WORLD / VIDEOS */
-.videos{position:relative;background:var(--cream);height:100vh;height:100svh;overflow:hidden;display:flex;flex-direction:column;justify-content:center;color:var(--ink);perspective:1400px}
+.videos{position:relative;background:var(--cream);overflow:hidden;color:var(--ink)}
 .videos .progress{position:absolute;top:0;left:0;height:5px;width:100%;background:linear-gradient(90deg,var(--yellow),var(--pink));transform-origin:left;transform:scaleX(0)}
 .v-head{padding:0 clamp(16px,5vw,80px);margin-bottom:10px;display:flex;justify-content:space-between;align-items:end;gap:20px}
 .v-head h2{font-family:var(--display);font-weight:400;font-size:clamp(36px,6vw,88px);line-height:.95}
 .v-head p{font-size:10px;letter-spacing:.16em;max-width:230px;text-align:right}
-.track{display:flex;gap:clamp(30px,5vw,80px);padding:30px clamp(16px,5vw,80px) 60px;will-change:transform;width:max-content;transform-style:preserve-3d}
-.videos{touch-action:pan-y;cursor:grab;padding-top:64px}
+.track{display:flex;gap:clamp(30px,5vw,80px);padding:30px clamp(16px,5vw,80px) 60px;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;cursor:grab}
+.track::-webkit-scrollbar{display:none}
+.track::after{content:"";flex:none;width:1px}
+.videos{padding:104px 0 56px}
 .track{padding-bottom:36px!important}
 .card-wrap{position:relative;flex:none}
 .card{display:block;position:relative;width:clamp(200px,22vw,300px);aspect-ratio:9/16;max-height:58vh;border:4px solid var(--ink);border-radius:20px;overflow:hidden;box-shadow:8px 10px 0 rgba(0,0,0,.22);background:#333;transition:box-shadow .3s}
@@ -159,7 +161,6 @@ footer a:hover{color:var(--yellow)}
 @keyframes ring{0%{box-shadow:0 0 0 0 rgba(255,216,74,.65)}80%,100%{box-shadow:0 0 0 16px rgba(255,216,74,0)}}
 /* stacking: the pinned "world" section can never paint over the sections above it */
 .about,.release,.clip{position:relative;z-index:2}
-.videos{z-index:1}
 footer{position:relative;z-index:2}
 
 /* ===== RESPONSIVE ===== */
@@ -168,7 +169,7 @@ footer{position:relative;z-index:2}
   .release{gap:56px}
   .rel-left{max-width:none}
   .cover-wrap{width:min(78%,420px)}
-  .videos{padding-top:64px}
+  .videos{padding:96px 0 48px}
   .v-head{flex-direction:column;align-items:flex-start}
   .v-head p{text-align:left;max-width:none}
 }
@@ -475,20 +476,20 @@ if(!reduce){
 
 /* ============ WORLD: pinned horizontal scroll with 3D tilt ============ */
 const track=document.getElementById('track');
-/* reels load only when the section is near the screen, and pause when far away */
+/* reels load only when near the screen, and pause when far away */
 (function(){
   const vids=[...document.querySelectorAll('.card video')];
-  vids.forEach(v=>v.addEventListener('loadeddata',()=>{const ph=v.parentElement.querySelector('.ph');if(ph)ph.style.display='none';v.play().catch(()=>{})}));
+  vids.forEach(v=>v.addEventListener('loadeddata',()=>{const ph=v.parentElement.querySelector('.ph');if(ph)ph.style.display='none';if(v._on)v.play().catch(()=>{})}));
   const start=v=>{if(!v.getAttribute('src')){v.src=v.dataset.src;v.load()}else v.play().catch(()=>{})};
-  if(!('IntersectionObserver' in window)){vids.forEach(start);return}
-  const io=new IntersectionObserver(es=>es.forEach(e=>{e.isIntersecting?start(e.target):e.target.pause()}),{rootMargin:'60% 120% 60% 120%'});
+  if(!('IntersectionObserver' in window)){vids.forEach(v=>{v._on=1;start(v)});return}
+  let secOn=false;
+  const upd=v=>{const on=secOn&&v._near;if(on&&!v._on){v._on=1;start(v)}else if(!on&&v._on){v._on=0;v.pause()}};
+  new IntersectionObserver(es=>{secOn=es[0].isIntersecting;vids.forEach(upd)},{rootMargin:'60% 0px 60% 0px'}).observe(document.getElementById('world'));
+  const io=new IntersectionObserver(es=>es.forEach(e=>{e.target._near=e.isIntersecting;upd(e.target)}),{root:track,rootMargin:'0px 60% 0px 60%'});
   vids.forEach(v=>io.observe(v));
 })();
-const dist=()=>Math.max(0,track.scrollWidth-innerWidth);
-gsap.to(track,{x:()=>-dist(),ease:'none',scrollTrigger:{id:'world',trigger:'#world',start:'top top',end:()=>'+='+dist(),pin:true,scrub:.6,invalidateOnRefresh:true,onUpdate:s=>gsap.set('#vProg',{scaleX:s.progress})}});
-document.querySelectorAll('.card-wrap').forEach((c,i)=>{
-  gsap.fromTo(c,{rotateZ:i%2?5:-6,rotateY:-24,y:i%2?-16:14},{rotateZ:i%2?-3:3,rotateY:18,y:i%2?-16:14,ease:'none',scrollTrigger:{trigger:'#world',start:'top top',end:'+=1600',scrub:true}});
-});
+document.querySelectorAll('.card-wrap').forEach((c,i)=>gsap.set(c,{rotateZ:i%2?-2.5:2.5,y:i%2?-14:12}));
+track.addEventListener('scroll',()=>{const m=track.scrollWidth-track.clientWidth;gsap.set('#vProg',{scaleX:m>0?track.scrollLeft/m:0})},{passive:true});
 
 
 /* ============ STRIPE MARQUEE (speeds up with scroll) ============ */
@@ -536,35 +537,15 @@ document.querySelectorAll('.card-wrap').forEach((c,i)=>{
 })();
 
 
-/* reels: also scroll sideways with a trackpad swipe, mouse drag or finger swipe */
+/* reels: native sideways scroll (swipe / trackpad / shift+wheel) + mouse drag */
 (function(){
-  const vw=document.getElementById('world'); let down=false,sx=0,sy=0,lx=0,drag=false,axis='';
-  const active=()=>{const s=ScrollTrigger.getById('world');return s&&s.isActive};
-  vw.addEventListener('wheel',e=>{
-    if(Math.abs(e.deltaX)>Math.abs(e.deltaY)&&active()){e.preventDefault();scrollBy({top:e.deltaX,behavior:'instant'})}
-  },{passive:false});
-  vw.addEventListener('pointerdown',e=>{if(e.button>0)return;down=true;drag=false;axis='';sx=lx=e.clientX;sy=e.clientY});
-  addEventListener('pointermove',e=>{
-    if(!down||!active())return;
-    if(!axis){const dx=Math.abs(e.clientX-sx),dy=Math.abs(e.clientY-sy);if(dx>6||dy>6)axis=dx>dy?'x':'y'}
-    if(axis==='x'){drag=true;scrollBy({top:(lx-e.clientX)*1.4,behavior:'instant'});lx=e.clientX;vw.style.cursor='grabbing'}
-  });
-  const up=()=>{down=false;vw.style.cursor='';setTimeout(()=>drag=false,0)};
+  let down=false,sx=0,sl=0,moved=false;
+  track.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'||e.button>0)return;down=true;moved=false;sx=e.clientX;sl=track.scrollLeft});
+  addEventListener('pointermove',e=>{if(!down)return;const d=e.clientX-sx;if(Math.abs(d)>5){moved=true;track.style.cursor='grabbing';track.scrollLeft=sl-d}});
+  const up=()=>{down=false;track.style.cursor='';setTimeout(()=>moved=false,0)};
   addEventListener('pointerup',up);addEventListener('pointercancel',up);
-  vw.addEventListener('click',e=>{if(drag){e.preventDefault();e.stopPropagation()}},true);
-  vw.addEventListener('dragstart',e=>e.preventDefault());
-})();
-
-/* reels stretch sideways with scroll speed */
-(function(){
-  if(reduce) return;
-  const cards=[...document.querySelectorAll('.card')]; let sk=0,sx=1,sy=1;
-  gsap.ticker.add(()=>{
-    const st=ScrollTrigger.getById('world'); const v=st&&st.isActive?st.getVelocity():0;
-    const tSk=Math.max(-22,Math.min(22,-v/160)), tSx=1+Math.min(Math.abs(v)/3500,.5), tSy=1-Math.min(Math.abs(v)/14000,.1);
-    sk+=(tSk-sk)*.12; sx+=(tSx-sx)*.12; sy+=(tSy-sy)*.12;
-    cards.forEach((c,i)=>gsap.set(c,{skewX:sk*(1+i*.12),scaleX:sx+i*.01*Math.abs(sk)/10,scaleY:sy}));
-  });
+  track.addEventListener('click',e=>{if(moved){e.preventDefault();e.stopPropagation()}},true);
+  track.addEventListener('dragstart',e=>e.preventDefault());
 })();
 
 
@@ -618,7 +599,7 @@ document.querySelectorAll('.card-wrap').forEach((c,i)=>{
   gsap.from('footer > div:not(.big)',{y:30,opacity:0,stagger:.12,duration:.7,scrollTrigger:{trigger:'footer',start:'top 90%'}});
 
   /* section "wipe" — each dark/blue block slides over the previous one */
-  ['#about','#single','#clip'].forEach(sel=>{
+  ['#about','#single'].forEach(sel=>{
     gsap.from(sel,{clipPath:'inset(8% 6% 0% 6% round 40px 40px 0 0)',ease:'none',scrollTrigger:{trigger:sel,start:'top bottom',end:'top 55%',scrub:true}});
   });
 })();
