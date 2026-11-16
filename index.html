@@ -24,7 +24,7 @@
   --display:'Bagel Fat One','Titan One',system-ui,sans-serif; --mono:'Space Mono',ui-monospace,monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;overflow-x:clip;-webkit-text-size-adjust:100%}
+html{overflow-x:clip;-webkit-text-size-adjust:100%}
 body{background:var(--ink);color:#fff;font-family:var(--mono);overflow-x:hidden}
 a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
@@ -337,6 +337,7 @@ footer{position:relative;z-index:2}
 <script>
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 gsap.registerPlugin(ScrollTrigger);
+ScrollTrigger.config({ignoreMobileResize:true});
 
 /* ============ PREVIEW PLAYER (30 s extracted from the clip) ============ */
 const playBtn=document.getElementById('playBtn'), icoPlay=document.getElementById('icoPlay'), icoPause=document.getElementById('icoPause');
@@ -437,9 +438,10 @@ let glitchKick=()=>{};
   let g=0,mx=.5,my=.5,tx=.5,ty=.5,vis=true,next=1.5,lastY=scrollY,t0=performance.now();
   addEventListener('pointermove',e=>{tx=e.clientX/innerWidth;ty=e.clientY/innerHeight});
   glitchKick=(a=1)=>{g=Math.max(g,a)};
-  new IntersectionObserver(es=>{vis=es[0].isIntersecting;if(vis)requestAnimationFrame(loop)}).observe(hero);
+  let running=false;
+  new IntersectionObserver(es=>{vis=es[0].isIntersecting;if(vis&&!running){running=true;requestAnimationFrame(loop)}}).observe(hero);
   function loop(now){
-    if(!vis) return; requestAnimationFrame(loop);
+    if(!vis){running=false;return} requestAnimationFrame(loop);
     if(!ready) return;
     const t=(now-t0)/1000;
     const px=mx,py=my; mx+=(tx-mx)*.08;my+=(ty-my)*.08;
@@ -447,7 +449,7 @@ let glitchKick=()=>{};
     gl.uniform1f(uT,t);gl.uniform1f(uG,g);gl.uniform2f(uM,mx,my);
     gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
   }
-  requestAnimationFrame(loop);
+  running=true;requestAnimationFrame(loop);
 })();
 if(!reduce){
   gsap.from('#heroTitle span',{y:140,opacity:0,rotate:-14,stagger:.1,duration:.9,delay:.2,ease:'back.out(1.8)'});
@@ -623,6 +625,7 @@ track.addEventListener('scroll',()=>{const m=track.scrollWidth-track.clientWidth
 
 /* page progress bar */
 gsap.to('#pbar',{scaleX:1,ease:'none',scrollTrigger:{trigger:document.body,start:'top top',end:'bottom bottom',scrub:true}});
+document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{const t=document.querySelector(a.getAttribute('href'));if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth'})}}));
 /* recompute every pin/trigger position whenever the layout changes (fonts, fullscreen, resize) */
 addEventListener('load',()=>ScrollTrigger.refresh());
 if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>ScrollTrigger.refresh());
@@ -630,7 +633,7 @@ if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>ScrollTri
   let tm, lastH=document.documentElement.scrollHeight, lastW=innerWidth, lastIH=innerHeight;
   const check=()=>{clearTimeout(tm);tm=setTimeout(()=>{
     const h=document.documentElement.scrollHeight;
-    if(h!==lastH||innerWidth!==lastW||innerHeight!==lastIH){lastH=h;lastW=innerWidth;lastIH=innerHeight;ScrollTrigger.refresh()}
+    if(h!==lastH||innerWidth!==lastW||Math.abs(innerHeight-lastIH)>160){lastH=h;lastW=innerWidth;lastIH=innerHeight;ScrollTrigger.refresh()}
   },250)};
   addEventListener('resize',check); addEventListener('fullscreenchange',check);
   if(window.ResizeObserver) new ResizeObserver(check).observe(document.body);
