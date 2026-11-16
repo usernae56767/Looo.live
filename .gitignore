@@ -1,0 +1,12 @@
+# macOS
+.DS_Store
+
+# local tooling (paths specific to this computer)
+.claude/
+
+# reference recording used to build the site, not part of it
+Example.MOV
+
+# unused large files (GitHub rejects files over 100 MB)
+assets/official-clip.mp4
+assets/official-clip-small.mp4
