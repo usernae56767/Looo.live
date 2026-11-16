@@ -96,8 +96,7 @@ button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
 .links a:last-child:nth-child(odd){grid-column:1/-1}
 .links a:hover{background:var(--yellow);box-shadow:0 3px 0 var(--ink)}
 .rel-right{position:relative;z-index:2;display:grid;place-items:center}
-.cover-wrap{position:relative;width:min(100%,470px);transform:rotate(3deg);transition:transform .4s}
-.cover-wrap:hover{transform:rotate(0) scale(1.02)}
+.cover-wrap{position:relative;width:min(100%,470px);transform:rotate(3deg);will-change:transform}
 .cover{position:relative;aspect-ratio:1;border:5px solid var(--ink);border-radius:14px;overflow:hidden;box-shadow:10px 14px 0 rgba(0,0,0,.28);background:#2f6bff}
 .cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .sticker{position:absolute;left:-26px;bottom:-24px;width:88px;height:88px;border-radius:50%;background:var(--yellow);border:3px solid var(--ink);display:grid;place-items:center;font:400 18px var(--display);transform:rotate(-80deg);animation:spin 14s linear infinite;box-shadow:3px 4px 0 var(--ink);color:var(--ink)}
@@ -156,9 +155,10 @@ footer a:hover{color:var(--yellow)}
 .links a:hover{background:linear-gradient(var(--yellow),var(--yellow)) left/100% 100% no-repeat,rgba(255,255,255,.1);box-shadow:0 3px 0 var(--ink)}
 .links a span{display:inline-block;transition:transform .3s}
 .links a:hover span{transform:translate(3px,-3px)}
-.play-btn{animation:ring 2.2s ease-out infinite}
-.play-btn.playing{animation:none}
-@keyframes ring{0%{box-shadow:0 0 0 0 rgba(255,216,74,.65)}80%,100%{box-shadow:0 0 0 16px rgba(255,216,74,0)}}
+.play-btn{position:relative}
+.play-btn::after{content:"";position:absolute;inset:-2px;border-radius:50%;border:2px solid var(--yellow);animation:ring 2.2s ease-out infinite;pointer-events:none}
+.play-btn.playing::after{animation:none;opacity:0}
+@keyframes ring{0%{transform:scale(1);opacity:.8}80%,100%{transform:scale(1.7);opacity:0}}
 /* stacking: the pinned "world" section can never paint over the sections above it */
 .about,.release,.clip{position:relative;z-index:2}
 footer{position:relative;z-index:2}
@@ -617,7 +617,7 @@ track.addEventListener('scroll',()=>{const m=track.scrollWidth-track.clientWidth
 
   /* section "wipe" — each dark/blue block slides over the previous one */
   ['#about','#single'].forEach(sel=>{
-    gsap.from(sel,{clipPath:'inset(8% 6% 0% 6% round 40px 40px 0 0)',ease:'none',scrollTrigger:{trigger:sel,start:'top bottom',end:'top 55%',scrub:true}});
+    gsap.from(sel,{scale:.92,borderRadius:'40px 40px 0 0',transformOrigin:'50% 0',ease:'none',force3D:true,clearProps:'transform,borderRadius',scrollTrigger:{trigger:sel,start:'top bottom',end:'top 55%',scrub:true}});
   });
 })();
 
