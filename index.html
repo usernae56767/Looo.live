@@ -28,7 +28,7 @@ html{overflow-x:clip;-webkit-text-size-adjust:100%}
 body{background:var(--ink);color:#fff;font-family:var(--mono);overflow-x:hidden}
 a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
-.pbar{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;height:4px;z-index:100;background:linear-gradient(90deg,var(--yellow),var(--pink),var(--lblue));transform-origin:left;transform:scaleX(0)}
+.pbar{position:fixed;top:0;left:0;right:0;height:4px;z-index:100;background:linear-gradient(90deg,var(--yellow),var(--pink),var(--lblue));transform-origin:left;transform:scaleX(0)}
 
 /* NAV */
 .nav{position:fixed;inset:0 0 auto 0;z-index:90;display:flex;justify-content:space-between;align-items:center;padding:calc(20px + env(safe-area-inset-top,0px)) max(clamp(16px,3vw,40px),env(safe-area-inset-right,0px)) 20px max(clamp(16px,3vw,40px),env(safe-area-inset-left,0px));color:#fff;pointer-events:none}
@@ -471,7 +471,7 @@ if(!reduce){
   walk(p);
   const words=p.querySelectorAll('.w');
   if(reduce){gsap.set(words,{opacity:1});return}
-  if(touch) gsap.to(words,{opacity:1,stagger:.03,duration:.5,ease:'none',scrollTrigger:{trigger:'#about',start:'top 70%'}});
+  if(touch) gsap.to(words,{opacity:1,stagger:.03,duration:.5,ease:'none',scrollTrigger:{trigger:'#about',start:'top 65%',end:'bottom 25%',toggleActions:'play reset play reset'}});
   else gsap.to(words,{opacity:1,stagger:.12,ease:'none',scrollTrigger:{trigger:'#about',start:'top 55%',end:'bottom 70%',scrub:true}});
 })();
 
